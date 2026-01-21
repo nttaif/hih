@@ -36,3 +36,17 @@ services:
       - "5050:80"
     depends_on:
       - db
+
+  tester:
+    # This defines the configuration options, including the context and dockerfile,
+    # that will be applied when Compose builds the application image.
+    build:
+      # This defines the build context for the image build — in this case, the current project directory.
+      context: .
+      # This specifies the Dockerfile in your current project directory as the file
+      dockerfile: Dockerfile.test
+    image: hih-apis-tester
+    container_name: hih-apis-tester
+    env_file: .env.test
+    depends_on:
+      - db

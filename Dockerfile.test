@@ -18,6 +18,4 @@ RUN npm install --only=production
 
 COPY --from=builder /dist ./dist
 
-EXPOSE 3000
-
 CMD ["node", "dist/main"]
