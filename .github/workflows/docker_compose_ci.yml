@@ -7,25 +7,63 @@ on:
     branches: [ "master" ]
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
+    timeout-minutes: 10 
+    
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
-    - name: Create .env
-      run: cp .env.example .env
-    - name: Create .env.test
-      run: cp .env.test.example .env.test
-    - name: Create public.pem
-      run: cp keys/public.pem.example keys/public.pem
-    - name: Create private.pem
-      run: cp keys/private.pem.example keys/private.pem
+
+
+    - name: Create Config Files & Keys
+      run: |
+        echo "${{ secrets.HIH_ENV_FILE }}" > .env
+        echo "${{ secrets.ENV_TEST_FILE }}" > .env.test
+        
+        mkdir -p keys
+        
+        echo "${{ secrets.PUBLIC_KEY }}" > keys/public.pem
+        
+        echo "${{ secrets.PRIVATE_KEY }}" > keys/private.pem
+
+    # 2. CACHING
+    - name: Cache Docker layers
+      uses: actions/cache@v3
+      with:
+        path: /tmp/.buildx-cache
+        key: ${{ runner.os }}-buildx-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-buildx-
+
+    # Setup Docker Buildx
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    # 3. BUILD: Build images
     - name: Build docker images
       run: docker compose build
-    - name: Run docker images
-      run: docker compose up -d
+
+    # 4. RUN & WAIT
+    - name: Start services and wait for health
+      run: |
+        docker compose up -d
+        
+        echo "⏳ Waiting for Database to be ready..."
+        sleep 15 
+        echo "✅ Database should be ready now."
+
+    # 5. TEST
     - name: Run tests
+      id: run_tests
       run: docker exec -t hih-apis-tester npm run test
+
+    # 6. DEBUGGING
+    - name: Dump Docker logs on failure
+      if: failure()
+      run: docker compose logs
+
+    # 7. CLEANUP:
     - name: Clean up
-      if: success() || failure()
-      run: docker compose down --rmi all -v --remove-orphans
+      if: always()
+      run: docker compose down --rmi local -v --remove-orphans
