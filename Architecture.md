@@ -19,7 +19,7 @@ src/
 │       ├── entities/
 │       ├── controllers/
 │       ├── services/
-│       └── providers/       # ☁️ CHỨA LOGIC GOOGLE DRIVE
+│       └── providers/      
 │           └── google-drive.provider.ts
 │
 ├── database/                # 🗄️ DATABASE MIGRATIONS & SEEDS

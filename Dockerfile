@@ -3,7 +3,7 @@
 FROM node:20-alpine AS builder
 # WORKDIR /src
 COPY package*.json ./
-RUN npm install
+RUN npm ci
 # Coppy source files
 COPY . .
 # Build NestJS (create folder dist)
@@ -12,11 +12,11 @@ RUN npm run build
 # Stage 2: Run production
 FROM node:18-alpine
 
-COPY package*.json ./
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/package*.json ./
 
-RUN npm install --only=production
-
-COPY --from=builder /dist ./dist
+USER node
 
 EXPOSE 3000
 
