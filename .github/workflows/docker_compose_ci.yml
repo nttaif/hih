@@ -19,7 +19,7 @@ jobs:
     # 1. SETUP ENV & KEYS
     - name: Create Config Files & Keys
       run: |
-        echo "${{ secrets.ENV_TEST_FILE }}" > .env.test
+        echo "${{ secrets.ENV_TEST_FILE }}" > .env
         mkdir -p keys
         echo "${{ secrets.PUBLIC_KEY }}" > keys/public.pem
         echo "${{ secrets.PRIVATE_KEY }}" > keys/private.pem
