@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import * as winston from 'winston';
 import * as DailyRotateFile from 'winston-daily-rotate-file';
 import { ServerConfig, ServerConfigName } from '../config/server.config';
-import { resolve } from 'path';
+import { join, resolve } from 'path';
 
 @Injectable()
 export class WinstonLogger implements LoggerService {
@@ -12,7 +12,7 @@ export class WinstonLogger implements LoggerService {
   constructor(private readonly configService: ConfigService) {
     const serverConfig =
       this.configService.getOrThrow<ServerConfig>(ServerConfigName);
-    const logsPath = resolve(__dirname, '../..', serverConfig.logDirectory);
+    const logsPath = join(process.cwd(), serverConfig.logDirectory);
 
     const logLevel = serverConfig.nodeEnv === 'development' ? 'warn' : 'error';
 

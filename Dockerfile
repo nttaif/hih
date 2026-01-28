@@ -1,23 +1,39 @@
 
-# Stage 1: Build the application
-FROM node:20-alpine AS builder
-# WORKDIR /src
+# --- STAGE 1: DEVELOPMENT ---
+FROM node:20-alpine AS development
+
 COPY package*.json ./
-RUN npm install
+RUN npm ci
 # Coppy source files
 COPY . .
-# Build NestJS (create folder dist)
+
+# --- STAGE 2: BUILD ---
+FROM node:20-alpine AS build
+
+COPY package*.json ./
+COPY --from=development /node_modules ./node_modules
+COPY . .
+
 RUN npm run build
 
-# Stage 2: Run production
-FROM node:18-alpine
+ENV NODE_ENV production
+RUN npm ci --only=production && npm cache clean --force
+
+# --- STAGE 3: PRODUCTION ---
+FROM node:20-alpine AS production
+
+WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install --only=production
+RUN mkdir -p logs && chown -R node:node logs
 
-COPY --from=builder /dist ./dist
+COPY --from=build /node_modules ./node_modules
+COPY --from=build /dist ./dist
 
-EXPOSE 3000
+USER node
+
+EXPOSE 8080
 
 CMD ["node", "dist/main"]
+

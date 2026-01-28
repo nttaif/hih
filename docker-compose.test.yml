@@ -1,0 +1,37 @@
+services:
+  db_test:
+    image: postgres:14
+    container_name: postgres_test
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}_test
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}_test"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres_test_data:/var/lib/postgresql/data
+  
+  api_test:
+    build:
+      context: .
+      target: development
+    container_name: hih_api_test
+    command: tail -f /dev/null 
+    environment:
+      - PORT=${PORT}
+      - NODE_ENV=test
+      - POSTGRES_DB=${POSTGRES_DB}_test
+    env_file:
+      - .env.test
+    depends_on:
+      db_test:
+        condition: service_healthy
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+
+volumes:
+  postgres_test_data:

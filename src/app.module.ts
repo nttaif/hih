@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import serverConfig from './config/server.config';
-import databaseConfig from './config/database.config';
+import databaseConfig, { DatabaseConfigName } from './config/database.config';
 import { UserModule } from './modules/user/user.module';
 import { WinstonLogger } from './config/winston.logger';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
   imports: [
@@ -15,6 +16,11 @@ import { WinstonLogger } from './config/winston.logger';
       ],
       cache: true,
       envFilePath: getEnvFilePath(),
+    }),
+    TypeOrmModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) =>
+        config.getOrThrow(DatabaseConfigName),
     }),
     UserModule
   ],

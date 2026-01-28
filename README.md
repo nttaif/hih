@@ -58,3 +58,14 @@ The project adheres to modern engineering standards and strict CI/CD processes.
 **Step 1: Clone the repository**
 ```bash
 git clone
+
+---
+**Step 2: Run dev enviroment **
+```bash
+docker compose -f docker-compose.dev.yml up -d
+
+docker compose -f docker-compose.test.yml up -d
+docker exec hih_api_test npm run test
+docker compose -f docker-compose.test.yml down -v
+
+docker compose -f docker-compose.prod.yml up -d --build
