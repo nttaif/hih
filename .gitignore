@@ -38,7 +38,7 @@ keys
 # dotenv environment variable files
 .env
 .env.dev
-.env.test
+.env.test.local
 .env.prod
 .env.local
 
